@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.env
+.venv/
+venv/
+logs/*.log
+storage/uploads/*
+storage/quarantine/*
+!storage/uploads/.gitkeep
+!storage/quarantine/.gitkeep
+.pytest_cache/
+.DS_Store
