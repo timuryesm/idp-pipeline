@@ -31,9 +31,10 @@ _CURRENCY_HINTS = {"$": "USD", "US$": "USD", "USD": "USD", "€": "EUR",
 # Small, single-purpose parsing helpers (pure functions, easy to test)
 # --------------------------------------------------------------------------
 def _to_decimal(raw: str) -> Optional[Decimal]:
-    """Turn a money string like '$1,234.50' into Decimal('1234.50')."""
+    """Turn a money string like '$1,234.50' or '-$18.20' into a Decimal."""
     if raw is None:
         return None
+    raw = raw.replace("\u2212", "-")  # normalise Unicode minus (−) to ASCII -
     cleaned = re.sub(r"[^0-9.\-]", "", raw)  # strip $, commas, spaces, etc.
     if cleaned in ("", "-", "."):
         return None
@@ -65,7 +66,7 @@ def _find_amount(text: str, labels: list[str]) -> Optional[Decimal]:
     after the label. This stops 'Tax' from wrongly matching 'Tax ID: 99-123...'.
     """
     for label in labels:
-        pattern = rf"{re.escape(label)}\s*[:#]?\s*([$€£]?\s*[\d,]+(?:\.\d+)?)"
+        pattern = rf"{re.escape(label)}\s*[:#]?\s*([-\u2212]?\s*[$€£]?\s*[\d,]+(?:\.\d+)?)"
         for m in re.finditer(pattern, text, flags=re.IGNORECASE):
             value = _to_decimal(m.group(1))
             if value is not None:
@@ -170,6 +171,12 @@ class PdfPlumberProvider(ExtractionProvider):
         if vendor:
             notes.append("Vendor name guessed from first line; verify.")
 
+        # Discount is stored as a positive magnitude (schema convention), so we
+        # take abs() of whatever we find (the document may show it negative).
+        discount = _find_amount(full_text, ["discount"])
+        if discount is not None:
+            discount = abs(discount)
+
         invoice = ExtractedInvoice(
             doc_id=doc_id,
             extracted_by=self.name,
@@ -180,6 +187,11 @@ class PdfPlumberProvider(ExtractionProvider):
             due_date=_find_date(full_text, ["due date", "payment due"]),
             currency=_detect_currency(full_text),
             line_items=line_items,
+            subtotal=_find_amount(full_text, ["subtotal"]),
+            shipping=_find_amount(full_text, ["shipping & handling", "shipping and handling", "shipping"]),
+            discount=discount,
+            # adjustments left to the AI provider; pdfplumber can't reliably net
+            # refund/fee lines, so we leave it None and let Step 3 flag residuals.
             tax_amount=_find_amount(full_text, ["tax", "vat", "gst"]),
             grand_total=_find_amount(full_text, ["grand total", "total due", "amount due", "total"]),
             raw_text=full_text,

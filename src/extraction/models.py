@@ -42,6 +42,20 @@ class ExtractedInvoice(BaseModel):
 
     # --- Money (Decimal, never float) --------------------
     line_items: list[ExtractedLineItem] = Field(default_factory=list)
+    subtotal: Optional[Decimal] = Field(
+        default=None, description="Total of line items before tax/shipping/discount"
+    )
+    shipping: Optional[Decimal] = Field(
+        default=None, description="Shipping & handling charge"
+    )
+    discount: Optional[Decimal] = Field(
+        default=None, description="Discount as a POSITIVE amount; reconciliation subtracts it"
+    )
+    adjustments: Optional[Decimal] = Field(
+        default=None,
+        description="Net of any other adjustments, SIGNED: positive raises the "
+                    "total, negative lowers it (e.g. +5 refund and -5 fee net to 0)",
+    )
     tax_amount: Optional[Decimal] = None
     grand_total: Optional[Decimal] = None
 

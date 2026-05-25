@@ -40,11 +40,19 @@ Return ONLY a JSON object with this exact shape (use null when a field is absent
     {"description": string|null, "quantity": string|null,
      "unit_price": string|null, "line_total": string|null}
   ],
+  "subtotal": string|null,
+  "shipping": string|null,
+  "discount": string|null,
+  "adjustments": string|null,
   "tax_amount": string|null,
   "grand_total": string|null
 }
 Rules: Dates must be ISO YYYY-MM-DD. Numbers must be plain decimals with no
-currency symbols or thousands separators (e.g. "1234.50"). Never invent values."""
+currency symbols or thousands separators (e.g. "1234.50"). Never invent values.
+For "discount", give a POSITIVE amount (how much was taken off), even if the
+document shows it as negative. For "adjustments", give the SIGNED net of any
+other adjustment lines (refunds positive, fees negative); if there are none,
+use null."""
 
 
 class OpenAIVisionProvider(ExtractionProvider):
@@ -132,6 +140,10 @@ class OpenAIVisionProvider(ExtractionProvider):
                 due_date=data.get("due_date"),
                 currency=data.get("currency"),
                 line_items=items,
+                subtotal=data.get("subtotal"),
+                shipping=data.get("shipping"),
+                discount=data.get("discount"),
+                adjustments=data.get("adjustments"),
                 tax_amount=data.get("tax_amount"),
                 grand_total=data.get("grand_total"),
             )
