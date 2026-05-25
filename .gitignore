@@ -10,3 +10,4 @@ storage/quarantine/*
 !storage/quarantine/.gitkeep
 .pytest_cache/
 .DS_Store
+scratch.py

@@ -3,6 +3,10 @@ pydantic>=2.6
 python-dotenv>=1.0
 streamlit>=1.33
 pandas>=2.2
+pdfplumber>=0.11
+python-dateutil>=2.9
+openai>=2.0,<3
+pymupdf>=1.24
 
 # Dev / testing
 pytest>=8.0

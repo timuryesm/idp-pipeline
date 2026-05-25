@@ -31,5 +31,11 @@ class Settings:
     LOG_LEVEL: str = os.getenv("IDP_LOG_LEVEL", "INFO").upper()
     LOG_DIR: Path = Path(os.getenv("IDP_LOG_DIR", str(BASE_DIR / "logs")))
 
+    # --- AI extraction (OpenAI) -------------------------------------------
+    # Loaded from .env. The model name is config, never hardcoded, so it can
+    # be swapped (e.g. to a newer model) without touching the code.
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
 
 settings = Settings()
