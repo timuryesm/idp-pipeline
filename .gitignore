@@ -11,3 +11,4 @@ storage/quarantine/*
 .pytest_cache/
 .DS_Store
 scratch.py
+storage/*.db
